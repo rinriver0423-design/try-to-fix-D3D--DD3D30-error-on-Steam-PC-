@@ -1,0 +1,169 @@
+GTA4 (Grand Theft Auto IV: The Complete Edition) —— D3D Error / DD3D30 修复包
+==============================================================================
+
+一句话：解压 -> 双击「一键安装.bat」-> 完事。
+
+
+【一】这个包解决什么问题
+------------------------
+从 Steam 启动 GTA4 弹出 "D3D Error" 或 "GTA IV FATAL ERROR: DD3D30"，
+或者能启动但画面是黑屏 / 只有主屏左上角一小块 / 分辨率不对。
+
+
+
+
+【二】怎么用（推荐方式，30 秒）
+--------------------------------
+1. 把这个 zip 解压到任意位置（桌面也行）
+
+2. 双击里面的「一键安装.bat」
+       出现黑色命令行窗口是正常的，不是病毒，是安装程序在跑
+
+3. 它会自动：
+       - 找到你电脑上 GTA4 的安装目录
+       - 把原有的 d3d9.dll / dinput8.dll / plugins / commandline.txt 备份到
+         游戏目录下的 _backup_before_fix_日期时间 文件夹
+       - 写入修复文件
+       - 打印安装结果
+
+4. 完全退出 Steam（托盘图标也要右键退出），重新打开 Steam，开始游戏
+
+5. 完事。
+
+
+   找不到游戏目录？安装程序会让你手动粘贴路径。
+   路径就是「GTAIV.exe」所在的那层文件夹，Steam 里
+   右键游戏 -> 管理 -> 浏览本地文件 可以直接打开。
+
+
+【三】也可以手动复制（不用脚本）
+----------------------------------
+把这个文件夹里的这几项，复制到游戏根目录（GTAIV.exe 所在的那层）：
+
+       d3d9.dll
+       dinput8.dll
+       plugins\          <- 整个文件夹
+       commandline.txt   <- 可选
+
+文件多的话，直接把整个文件夹里的内容全选，粘贴到游戏根目录覆盖即可。
+
+
+
+
+【四】分辨率 / 全屏
+------------------
+进游戏以后，在游戏菜单里改：
+
+       Settings（设置） -> Graphics（图形） -> 选分辨率 / 勾选 Fullscreen
+
+游戏退出时会自动保存到
+       文档\Rockstar Games\GTA IV\Settings\SETTINGS.CFG
+
+注意两点：
+  * 不要改 commandline.txt 里的 -width / -height，实测在 GTA4 上不生效
+    （-width=1280 -height=720 和 -width=1024 -height=768 两种写法都无效，
+      游戏仍然以 800x600 启动）
+  * 游戏运行期间 SETTINGS.CFG 是不存在的，只有退出游戏后才写出来，这是正常的
+
+
+【五】DXVK 起不来？换备用方案
+-----------------------------
+少数情况（尤其是很新的显卡驱动）DXVK 可能反而起不来。
+那就把「备用_dgVoodoo方案」文件夹里的这三个文件复制到游戏根目录覆盖：
+
+       d3d9.dll
+       dgVoodoo.conf
+       dgVoodooCpl.exe
+
+dgVoodoo2 是把 D3D9 转译成 D3D11，对驱动更保守，成功率不低，
+但画面特效比 DXVK 略逊。
+
+  * dgVoodooCpl.exe 是控制面板程序，Windows  Defender 有时会误报，
+    这是 dgVoodoo2 的已知误报。可以加信任区，或者干脆不用它
+    （只复制 d3d9.dll 和 dgVoodoo.conf 也能正常工作）。
+
+
+【六】想还原 / 卸载
+------------------
+双击「卸载修复.bat」，会把文件还原回安装前的状态。
+备份目录也会保留在游戏根目录里，确认没问题后可以自己删。
+
+
+【七】三个容易踩的坑
+--------------------
+1. FusionFix 的 .asi 绝不能停用。
+   停用后会出现 GTAIV.exe 进程起来了但 0 内存、无窗口、卡在后台的情况，
+   看起来像游戏卡死。plugins 里的三个文件要一起复制。
+
+2. 游戏根目录只能有一个 d3d9.dll。
+   同时存在多个同名 dll 会互相打架。如果你还装了别的 mod，注意冲突。
+
+3. 双显卡机器注意游戏可能跑到核显上。
+   注册表 HKCU\Software\Microsoft\DirectX\UserGpuPreferences 里
+   给 GTAIV.exe 加一行 GpuPreference=2; 强制用独显。
+
+
+【八】为什么有效（原理）
+------------------------
+这不是游戏文件损坏，也不是显卡坏了，更不是 mod 的锅。
+问题出在 Windows 的 32 位 Direct3D 9 通路与显示驱动的适配器握手层：
+
+       Direct3DCreate9()      -> 成功
+       AdapterCount           -> 2（核显、独显都在）
+       GetAdapterIdentifier()  -> 全部 D3DERR_INVALIDCALL (0x8876086C)
+       GetAdapterModeCount()   -> 全部返回 0 个模式
+       CreateDevice()          -> INVALIDCALL 或在 d3d9.dll 内崩溃
+
+64 位 D3D9 完全正常，只有 32 位这一路坏了。
+系统自带的 d3d9.dll 文件本身是完整的，用旧版本覆盖也没用。
+
+彻底根治需要管理员权限（关 HAGS / 回滚重装显卡驱动），所以本包用转译层绕过：
+
+       DXVK 3.1.1      D3D9 -> Vulkan   （主方案，效果最好）
+       dgVoodoo2 2.87.5 D3D9 -> D3D11    （备用方案，更保守）
+
+全程不修改任何系统文件，删干净就回到原样。
+
+
+【九】怎么确认修好了
+--------------------
+任意一条即可：
+   * 能进主菜单，画面正常
+   * 存档时间戳更新：
+       文档\Rockstar Games\GTA IV\Profiles\<数字ID>\501C4FD0.dat
+       文档\Rockstar Games\GTA IV\Profiles\<数字ID>\cloudsavedata.dat
+
+想看转译日志（排查用）：
+   新建一个空文件夹，比如 D:\dxvklog
+   设置环境变量 DXVK_LOG_PATH=D:\dxvklog
+   跑一次游戏后，该文件夹里会出现 GTAIV_d3d9.log，
+   里面能看到实际用的是哪张显卡。
+
+
+【十】包里的文件
+----------------
+       一键安装.bat          双击这个
+       一键安装.ps1          安装程序本体（bat 调用的）
+       卸载修复.bat          双击这个可还原
+       卸载修复.ps1          卸载程序本体
+       d3d9.dll              DXVK 3.1.1 (32位) —— 核心
+       dinput8.dll           ASI Loader —— FusionFix 加载器
+       plugins\              FusionFix v5.1.2（三个文件必须一起）
+       commandline.txt       启动参数（可选，可删）
+       备用_dgVoodoo方案\    备用转译层
+
+
+【十一】第三方组件与许可
+------------------------
+本包包含以下第三方项目的官方发行文件，未修改任何二进制内容：
+
+   DXVK 3.1.1        https://github.com/doitsujin/dxvk        (zlib)
+   dgVoodoo2 v2.87.5  https://github.com/dege-diosg/dgVoodoo2   (GPL)
+   FusionFix v5.1.2   https://github.com/SteamGifts/FusionFix  (freeware)
+   ASI Loader         https://github.com/ThirteenAG/ASI-Loader  (zlib)
+
+各组件版权归原作者所有。dgVoodoo2 为 GPL 授权，源码见上述主页。
+
+本包新增内容仅为一键安装 / 卸载脚本与说明文档。
+
+祝你玩得开心。如果这个包帮到了别人，也欢迎转发。
