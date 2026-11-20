@@ -9,13 +9,31 @@
 
 ## ⬇️ 下载
 
-**Releases → v1.0.0 → `GTA4_DD3D30_Fix_Pack.zip`**（19 MB，已打包好，解压即用）
+**Releases → v1.1.0 → `GTA4_D3D9_Fix_v1.1.zip`**（19 MB，带一键安装脚本，推荐）
 
 直接下载：
-<https://github.com/rinriver0423-design/try-to-fix-D3D--DD3D30-error-on-Steam-PC-/releases/download/v1.0.0/GTA4_DD3D30_Fix_Pack.zip>
+<https://github.com/rinriver0423-design/try-to-fix-D3D--DD3D30-error-on-Steam-PC-/releases/download/v1.1.0/GTA4_D3D9_Fix_v1.1.zip>
 
 不想用 zip 的话，也可以直接从仓库下载单个文件（本页右侧 **Code → Download ZIP**）。
 
+## 🚀 一键安装（v1.1.0 起）
+
+解压后**双击 `一键安装.bat`** 即可，不需要手动找文件：
+
+1. 下载 zip 并解压到任意位置
+2. 双击 `一键安装.bat`（黑色命令行窗口是正常的，不是病毒）
+3. 它会自动找到 GTA4 安装目录 → 备份原文件 → 写入修复文件
+4. 完全退出 Steam（托盘图标也要退出），重新打开 Steam 开始游戏
+
+找不到游戏目录时，脚本会让你手动粘贴路径
+（Steam 里右键游戏 → 管理 → 浏览本地文件 可直接打开该目录）。
+
+想还原就双击 `卸载修复.bat`。
+
+## 📁 手动安装
+
+把 `d3d9.dll`、`dinput8.dll`、`plugins` 文件夹、`commandline.txt`
+复制到游戏根目录（`GTAIV.exe` 所在那层）即可。
 ---
 
 ## 症状
