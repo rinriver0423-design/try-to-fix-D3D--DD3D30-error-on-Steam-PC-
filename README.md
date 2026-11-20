@@ -7,6 +7,17 @@
 
 ---
 
+## ⬇️ 下载
+
+**Releases → v1.0.0 → `GTA4_DD3D30_Fix_Pack.zip`**（19 MB，已打包好，解压即用）
+
+直接下载：
+<https://github.com/rinriver0423-design/try-to-fix-D3D--DD3D30-error-on-Steam-PC-/releases/download/v1.0.0/GTA4_DD3D30_Fix_Pack.zip>
+
+不想用 zip 的话，也可以直接从仓库下载单个文件（本页右侧 **Code → Download ZIP**）。
+
+---
+
 ## 症状
 
 - 从 Steam 点「开始游戏」，弹出 `D3D Error` 或 `GTA IV FATAL ERROR: DD3D30`，进不去。
