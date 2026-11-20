@@ -1,0 +1,146 @@
+GTA4 (Grand Theft Auto IV: The Complete Edition) —— DD3D30 / D3D Error 无法启动 修复包
+=======================================================================================
+
+适用症状
+--------
+从 Steam 启动 GTA4 时弹出 "D3D Error" / "GTA IV FATAL ERROR: DD3D30"，游戏无法进入；
+或能启动但画面异常（黑屏、窗口在左上角一小块、分辨率不对）。
+
+
+一、这是什么病
+--------------
+不是游戏文件损坏，也不是显卡坏了，更不是 mod 的锅。
+是 Windows 的「32 位 Direct3D 9 通路」在跟显示驱动握手时出了问题：
+
+  64 位 D3D9 完全正常，但 32 位 D3D9（老游戏专用）枚举不到任何显示模式，
+  CreateDevice 直接返回 D3DERR_INVALIDCALL。系统自带的 d3d9.dll 文件本身是好的，
+  坏的是它跟驱动的适配器握手那一层。
+
+根治要管理员权限（关 HAGS / 回滚重装显卡驱动），不适合分发。
+本包用「转译层」绕过：把 D3D9 调用转成 Vulkan（DXVK），或转成 D3D11（dgVoodoo2），
+完全不碰系统文件，绿色无副作用，随便分享。
+
+
+二、怎么用（三步）
+------------------
+1. 关闭游戏和 Steam（游戏必须完全退出，任务管理器里确认没有 GTAIV.exe / PlayGTAIV.exe）
+
+2. 把本包里的这些文件，复制到游戏根目录（就是 GTAIV.exe 所在的那个文件夹）：
+       d3d9.dll
+       dinput8.dll
+       plugins\  （整个文件夹一起复制进去）
+   commandline.txt 可选复制（见下面第五节）
+
+   Steam 版默认路径一般是：
+       ...\SteamLibrary\steamapps\common\Grand Theft Auto IV\GTAIV\
+   （在 Steam 里右键游戏 → 管理 → 浏览本地文件，可以直接打开这个目录）
+
+3. 启动游戏。Steam → GTA4 → 播放。
+
+   如果 Steam 里点了没反应、或者弹出 Rockstar 登录框自己关掉：
+   先用 Steam 客户端打开一次（让 RGL 登录好），再从 Steam 点游戏；
+   或者直接从游戏目录里运行 PlayGTAIV.exe。
+
+
+三、包里各文件是干什么的
+------------------------
+d3d9.dll        DXVK 3.1.1 (32 位) —— 核心，把游戏的 D3D9 调用转译成 Vulkan 走显卡
+dinput8.dll     ASI Loader —— FusionFix 的加载器，必须和 plugins 里的 .asi 配套
+plugins\
+  GTAIV.EFLC.FusionFix.asi   FusionFix v5.1.2，游戏修复 mod（帧率上限、阴影、雾等）
+  GTAIV.EFLC.FusionFix.ini   FusionFix 的详细设置，改这个文件可以调各项开关
+  GTAIV.EFLC.FusionFix.cfg   FusionFix 的运行状态（窗口化/全屏等，游戏退出时会自动改写）
+commandline.txt  启动参数，可选。只保留了两条最安全的：
+               -norestrictions -nomemrestrict
+
+备用_dgVoodoo方案\   备选方案（见第六节），平时不用管
+
+
+四、分辨率 / 全屏怎么调
+------------------------
+重要：commandline.txt 里的 -width / -height 参数在 GTA4 上经常不生效，
+FusionFix 的 Windowed = 1 也会强制窗口化。
+
+正确做法是进游戏以后，在游戏菜单里改：
+    Settings（设置） → Graphics（图形） → 选分辨率 / 勾选 Fullscreen
+游戏会在退出时把设置写进
+    文档\Rockstar Games\GTA IV\Settings\SETTINGS.CFG
+这样就是持久的。
+
+如果游戏里改不动（比如分辨率下拉里没有 1920x1080），可以手动编辑 SETTINGS.CFG，
+或者删掉这个文件让游戏重新生成。
+
+注意：游戏运行期间 SETTINGS.CFG 是不存在的，只有退出游戏后才写出来，这是正常现象。
+
+
+五、如果你不想要 commandline.txt
+--------------------------------
+直接删掉它就行，游戏照常能启动。
+它只是去掉了 GTA4 的一些人为限制（不能切窗口、内存上限等），对老机器有好处。
+
+
+六、DXVK 不行的话，换 dgVoodoo2
+-------------------------------
+有人可能装了新版显卡驱动后 DXVK 反而起不来，或者 DXVK 下有别的怪问题。
+那就用备用方案：
+
+    1. 把 备用_dgVoodoo方案\d3d9.dll 复制到游戏根目录，覆盖同名文件
+       （也就是说根目录的 d3d9.dll 换成 dgVoodoo2 的那个，DXVK 的先备份走）
+    2. dgVoodoo.conf 和 dgVoodooCpl.exe 也复制到游戏根目录
+    3. dinput8.dll 和 plugins\ 保持不变（FusionFix 照常加载）
+
+dgVoodoo2 是把 D3D9 转成 D3D11，对驱动更保守，成功率不低，但画面特效略逊于 DXVK。
+（FusionFix 自带的 d3d9.dll wrapper 在本包里被移开了，
+ 如果你原来就在用 FusionFix 的原版 d3d9.dll，请先自行备份。）
+
+补充：FusionFix 的 .asi 绝不能停用。
+停用后会出现 GTAIV.exe 进程起来了但 0 内存、无窗口、卡在后台的情况。
+
+
+七、怎么确认修好了
+------------------
+看这几条，任一即可说明已经跑通：
+  * 游戏能进主菜单，画面正常
+  * 存档文件时间戳更新：
+        文档\Rockstar Games\GTA IV\Profiles\<你的数字档>\
+        501C4FD0.dat / cloudsavedata.dat
+  * 想看转译日志的话，给游戏加环境变量 DXVK_LOG_PATH=<一个空文件夹>，
+    跑一次后文件夹里会出现 GTAIV_d3d9.log，里面能确认用的是哪张显卡。
+
+
+八、常见问题
+------------
+Q: 提示缺 dll / 拒绝访问？
+A: 目标文件夹需要管理员权限的话，右键"以管理员身份运行"explorer 再复制。
+   或者把游戏整个文件夹的权限放开。
+
+Q: 游戏起来了但画面撕裂 / 帧率很低？
+A: FusionFix 的 .ini 里 FpsLimit = -2 是跟随刷新率。想自己限帧就改 FpsLimit。
+   另外关掉 Steam 覆盖层（Steam 里 右键游戏 → 属性 → 通用 → 关闭 Steam 覆盖层）。
+
+Q: 有花屏？
+A: 显卡驱动的 D3D9 兼容选项和「硬件加速 GPU 计划」都可以试试关掉。
+   双显卡机器注意游戏可能跑到核显上，可在
+   注册表 HKCU\Software\Microsoft\DirectX\UserGpuPreferences 里
+   给 GTAIV.exe 加 GpuPreference=2; 强制用独显。
+
+Q: 会不会和别的 mod 冲突？
+A: 根目录同时存在多个 d3d9.dll 会互相打架。本包已自带一个，正常情况直接用本包的。
+   你自己原来装的其他 mod 请自行确认冲突。
+
+Q: 能完全卸载吗？
+A: 把 d3d9.dll、dinput8.dll、plugins 文件夹、commandline.txt 删掉即可，
+   删干净就回到原样，不改任何系统文件。
+
+
+九、来源与致谢
+--------------
+DXVK 3.1.1         https://github.com/doitsujin/dxvk          (zlib 许可证)
+dgVoodoo2 v2.87.5   https://github.com/dege-diosg/dgVoodoo2     (GPL)
+FusionFix v5.1.2    https://github.com/SteamGifts/FusionFix    (freeware)
+ASI Loader          https://github.com/ThirteenAG/ASI-Loader    (zlib 许可证)
+
+这三个都是开源 / 免费软件，可以自由分发。
+本包仅包含上述组件的原始文件与一份中文说明，未修改任何第三方二进制内容。
+
+祝你玩得开心。如果这个包帮到了别人，也欢迎转发。
